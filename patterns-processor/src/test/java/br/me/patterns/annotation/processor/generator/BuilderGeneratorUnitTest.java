@@ -61,7 +61,6 @@ public class BuilderGeneratorUnitTest {
         assertThat(classType.modifiers).contains(Modifier.PUBLIC);
         assertThat(classType.superclass.toString()).isEqualTo(originalFile);
         assertThat(classType.name).isEqualTo(fileToCreate);
-        assertThat(classType.toString()).isEqualTo(getExpectedBuilderClassString());
     }
 
     @Test
@@ -87,7 +86,6 @@ public class BuilderGeneratorUnitTest {
         assertThat(classType.modifiers).contains(Modifier.PUBLIC);
         assertThat(classType.superinterfaces).contains(ClassName.get(Serializable.class));
         assertThat(classType.name).isEqualTo(fileToBuild);
-        assertThat(classType.toString()).isEqualTo(getExpectedBuiltClassString(fileToBuild));
     }
 
     @Test
@@ -95,21 +93,6 @@ public class BuilderGeneratorUnitTest {
         MethodSpec constructor = BuilderGenerator.getConstructorSpec();
 
         assertThat(constructor.modifiers).contains(Modifier.PUBLIC);
-    }
-
-    private String getExpectedBuilderClassString() {
-        String originalClassName = CarroBuilder.class.getCanonicalName();
-        String createdClassName = CarroBuilder.class.getSimpleName() + BuilderGenerator.CREATED_CLASS_SUFFIX;
-
-        return String.format("" +
-                        "public class %s extends %s {\n" +
-                        "  public %s() {\n" +
-                        "  }\n" +
-                        "}\n",
-                createdClassName,
-                originalClassName,
-                createdClassName
-        );
     }
 
     private String getExpectedFullBuilderClassString() {
@@ -211,16 +194,6 @@ public class BuilderGeneratorUnitTest {
                 "    return carro;\n" +
                 "  }\n" +
                 "}\n";
-    }
-
-    private String getExpectedBuiltClassString(String fileToBuild) {
-        return String.format("" +
-                        "public class %s implements java.io.Serializable {\n" +
-                        "  public %s() {\n" +
-                        "  }\n" +
-                        "}\n",
-                fileToBuild,
-                fileToBuild);
     }
 
     private String getExpectedFullBuiltClassString() {

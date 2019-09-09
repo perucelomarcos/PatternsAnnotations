@@ -17,7 +17,7 @@ public class SingletonGenerator {
     static final String PATTERN_NAME = "Singleton";
     static final String CREATED_CLASS_SUFFIX = "_";
     static final String GET_INSTANCE_METHOD_NAME = "getInstance";
-    static final String INSTANCE_FIELD_NAME = "instance";
+    static final String INSTANCE_FIELD_NAME = "INSTANCE";
 
     public static JavaFile generate(Element element) {
         String targetFileName = getTargetFileName(element);
@@ -52,20 +52,21 @@ public class SingletonGenerator {
     }
 
     static FieldSpec getInstanceFieldSpec(TypeName type) {
-        return FieldSpec.builder(type, SingletonGenerator.INSTANCE_FIELD_NAME, Modifier.PRIVATE, Modifier.STATIC).build();
+        return FieldSpec.builder(type, SingletonGenerator.INSTANCE_FIELD_NAME, Modifier.PRIVATE, Modifier.FINAL, Modifier.STATIC)
+                .initializer("new $T()", type)
+                .build();
     }
 
     static MethodSpec getConstructorSpec() {
-        return MethodSpec.constructorBuilder().addModifiers(Modifier.PRIVATE).build();
+        return MethodSpec.constructorBuilder()
+                .addModifiers(Modifier.PRIVATE)
+                .build();
     }
 
     static MethodSpec getInstanceMethodSpec(TypeName type) {
         return MethodSpec.methodBuilder(GET_INSTANCE_METHOD_NAME)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .returns(type)
-                .beginControlFlow("if ($L == null)", INSTANCE_FIELD_NAME)
-                .addStatement("$L = new $T()", INSTANCE_FIELD_NAME, type)
-                .endControlFlow()
                 .addStatement("return $L", INSTANCE_FIELD_NAME)
                 .build();
     }

@@ -17,9 +17,6 @@ import org.junit.runners.JUnit4;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 
-import br.me.patterns.annotation.processor.generator.BuilderGenerator;
-import br.me.patterns.annotation.processor.generator.SingletonGenerator;
-
 import static com.google.common.truth.Truth.assertThat;
 
 @RunWith(JUnit4.class)
@@ -50,11 +47,11 @@ public class SingletonGeneratorUnitTest {
     }
 
     @Test
-    public void instanceField_isPrivateAndStatic() {
+    public void instanceField_isPrivateFinalAndStatic() {
         TypeName mockType = ParameterizedTypeName.get(MathSingletonToTest.class);
         FieldSpec instanceField = SingletonGenerator.getInstanceFieldSpec(mockType);
 
-        assertThat(instanceField.modifiers).containsExactly(Modifier.PRIVATE, Modifier.STATIC);
+        assertThat(instanceField.modifiers).containsExactly(Modifier.PRIVATE, Modifier.FINAL, Modifier.STATIC);
         assertThat(instanceField.name).isEqualTo(SingletonGenerator.INSTANCE_FIELD_NAME);
         assertThat(instanceField.type.getClass().getSimpleName()).isEqualTo(mockType.getClass().getSimpleName());
     }
@@ -88,39 +85,6 @@ public class SingletonGeneratorUnitTest {
         assertThat(classType.modifiers).contains(Modifier.PUBLIC);
         assertThat(classType.superclass.toString()).isEqualTo(originalFile);
         assertThat(classType.name).isEqualTo(fileToCreate);
-        assertThat(classType.toString()).isEqualTo(getExpectedClassString());
-    }
-
-    private String getExpectedClassString() {
-        String originalClassName = MathSingletonToTest.class.getCanonicalName();
-        String createdClassName = MathSingletonToTest.class.getSimpleName() + BuilderGenerator.CREATED_CLASS_SUFFIX;
-
-        return String.format("" +
-                "public class %s extends %s {\n" +
-                "  private static %s %s;\n" +
-                "\n" +
-                "  private %s() {\n" +
-                "  }\n" +
-                "\n" +
-                "  public static %s %s(\n" +
-                "      ) {\n" +
-                "    if (%s == null) {\n" +
-                "      %s = new %s();\n" +
-                "    }\n" +
-                "    return %s;\n" +
-                "  }\n" +
-                "}\n",
-                createdClassName,
-                originalClassName,
-                originalClassName,
-                SingletonGenerator.INSTANCE_FIELD_NAME,
-                createdClassName,
-                originalClassName,
-                SingletonGenerator.GET_INSTANCE_METHOD_NAME,
-                SingletonGenerator.INSTANCE_FIELD_NAME,
-                SingletonGenerator.INSTANCE_FIELD_NAME,
-                originalClassName,
-                SingletonGenerator.INSTANCE_FIELD_NAME);
     }
 
     private String expectedFileContent() {
@@ -128,16 +92,13 @@ public class SingletonGeneratorUnitTest {
                 "package br.me.patterns.annotation.processor.generator;\n" +
                 "\n" +
                 "public class MathSingletonToTest_ extends SingletonGeneratorUnitTest.MathSingletonToTest {\n" +
-                "  private static SingletonGeneratorUnitTest.MathSingletonToTest instance;\n" +
+                "  private static final SingletonGeneratorUnitTest.MathSingletonToTest INSTANCE = new SingletonGeneratorUnitTest.MathSingletonToTest();\n" +
                 "\n" +
                 "  private MathSingletonToTest_() {\n" +
                 "  }\n" +
                 "\n" +
                 "  public static SingletonGeneratorUnitTest.MathSingletonToTest getInstance() {\n" +
-                "    if (instance == null) {\n" +
-                "      instance = new SingletonGeneratorUnitTest.MathSingletonToTest();\n" +
-                "    }\n" +
-                "    return instance;\n" +
+                "    return INSTANCE;\n" +
                 "  }\n" +
                 "}\n";
     }
